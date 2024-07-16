@@ -1,6 +1,6 @@
 import React from "react";
 
-const Menu = () => {
+const Menu = ({setSelectedComponent}) => {
   return (
     <div className="flex flex-col items-center justify-between  w-full h-full">
       <h1>Select Action</h1>
@@ -8,6 +8,7 @@ const Menu = () => {
         <button
           type="button"
           class="px-5 py-2.5 rounded-lg text-sm tracking-wider font-medium border border-current outline-none bg-blue-700 hover:bg-transparent text-white hover:text-blue-700 transition-all duration-300"
+          onClick={() => setSelectedComponent("CreateWallet")}
         >
           Create Wallet
         </button>
