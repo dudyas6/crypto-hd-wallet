@@ -15,15 +15,34 @@ export const useWallet = () => {
 export const SessionProvider = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState(null);
 
-  const createWallet = async (pass) => {
+  const createWallet = async (name, pass) => {
+    setCurrentWallet((prevWallet) => ({
+      ...prevWallet,
+      name: name,
+    }));
     const wallet = ethers.Wallet.createRandom();
     const mnemonic = wallet.mnemonic.phrase;
 
     const ethWallet0 = ethers.Wallet.fromMnemonic(mnemonic, "m/44'/60'/0'/0/0");
     const ethWallet1 = ethers.Wallet.fromMnemonic(mnemonic, "m/44'/60'/0'/0/1");
 
-    encryptWallet("eth0", ethWallet0, pass);
-    encryptWallet("eth1", ethWallet1, pass);
+    const eth0Privatekey = encryptWallet("Blast", ethWallet0, pass);
+    const eth1Privatekey = encryptWallet("Etherium", ethWallet1, pass);
+
+    localStorage.setItem(
+      "wallet",
+      JSON.stringify({
+        name: name,
+        Blast: {
+          address: ethWallet0.address,
+          privateKey: ethWallet0.privateKey,
+        },
+        Etherium: {
+          address: ethWallet1.address,
+          privateKey: ethWallet1.privateKey,
+        },
+      })
+    );
 
     return mnemonic;
   };
@@ -34,8 +53,6 @@ export const SessionProvider = ({ children }) => {
       pass
     ).toString();
 
-    localStorage.setItem(name + "-private-key", encryptedPrivateKey);
-    localStorage.setItem(name + "-address", wallet.address);
     setCurrentWallet((prevWallet) => ({
       ...prevWallet,
       [name]: {
@@ -43,7 +60,7 @@ export const SessionProvider = ({ children }) => {
         key: wallet.privateKey,
       },
     }));
-    return;
+    return encryptedPrivateKey;
   };
 
   const decryptWallet = (name, pass) => {

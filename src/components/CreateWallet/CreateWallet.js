@@ -15,10 +15,10 @@ const CreateWallet = ({ setSelectedComponent }) => {
       return;
     }
 
-    const mnemonic = await createWallet(pass);
+    const mnemonic = await createWallet(name, pass);
     setMnemonic(mnemonic);
 
-    setSelectedComponent("Wallet");
+    // setSelectedComponent("Wallet");
   };
 
   return (
