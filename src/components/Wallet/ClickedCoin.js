@@ -1,13 +1,12 @@
 import React, { useState } from "react";
 import { useWallet } from "@/lib/sessionContext";
 import QRCode from "qrcode.react";
+import SendForm from "./SendForm";
 
-const ClickedCoin = ({ selectedCoin, onClick }) => {
-  // State to manage the currently selected tab
+const ClickedCoin = ({ selectedCoin, balance, onClick }) => {
   const [selectedTab, setSelectedTab] = useState("receive");
   const { currentWallet } = useWallet();
 
-  // Handler for tab clicks
   const handleTabClick = (tab) => {
     setSelectedTab(tab);
   };
@@ -15,10 +14,34 @@ const ClickedCoin = ({ selectedCoin, onClick }) => {
   const address = currentWallet[selectedCoin]?.address || "";
 
   return (
-    <div className="p-4 border rounded-lg bg-white shadow-md">
-      <h4 className="text-lg text-center font-bold mb-4">{selectedCoin}</h4>
+    <div className="relative p-4 border rounded-lg bg-white">
+      <button
+        onClick={onClick}
+        className="absolute top-4 left-4 px-2 py-2 rounded-3xl bg-blue-500 text-white  flex justify-center"
+      >
+        <svg
+          className="w-6 h-6 text-white"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          fill="none"
+          viewBox="0 0 24 24"
+        >
+          <path
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M5 12h14M5 12l4-4m-4 4 4 4"
+          />
+        </svg>
+      </button>
 
-      {/* Tabs */}
+      <h4 className="text-lg text-center font-bold ">{selectedCoin}</h4>
+      <h3 className="font-semibold text-center dark:text-black mb-4">
+        {selectedCoin} balance is : {balance}
+      </h3>
       <ul className="flex gap-4 bg-gray-100 rounded-2xl p-1 w-max mx-auto">
         <li
           className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
@@ -45,27 +68,15 @@ const ClickedCoin = ({ selectedCoin, onClick }) => {
               Your {selectedCoin} receiving address:
             </div>
             <p className="text-center">{address}</p>
-            {/* QR Code */}
             <div className="mt-4 flex justify-center">
-              {address && (
-                <QRCode
-                  value={address}
-                  size={128} // Size of the QR code
-                  level="H" // Error correction level
-                />
-              )}
+              {address && <QRCode value={address} size={128} level="H" />}
             </div>
           </div>
         )}
-        {selectedTab === "send" && <div></div>}
+        {selectedTab === "send" && (
+          <SendForm selectedCoin={selectedCoin} balance={balance} />
+        )}
       </div>
-
-      <button
-        onClick={onClick}
-        className="mt-4 px-4 py-2 bg-blue-500 w-full text-white rounded flex justify-center"
-      >
-        Return to Wallet
-      </button>
     </div>
   );
 };

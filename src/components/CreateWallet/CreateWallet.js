@@ -17,18 +17,16 @@ const CreateWallet = ({ setSelectedComponent }) => {
 
     const mnemonic = await createWallet(name, pass);
     setMnemonic(mnemonic);
-
-    // setSelectedComponent("Wallet");
   };
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center gap-10">
-        <h1 className="text-center font-bold">Create a Wallet</h1>
+      <div className="flex flex-col items-center justify-center dark:text-black gap-10 bg-white shadow-[0_4px_12px_-5px_rgba(0,0,0,0.4)] px-6 py-8 w-full max-w-md rounded-lg font-[sans-serif] overflow-hidden mx-auto mt-4">
         <form
-          className="space-y-4 font-[sans-serif] max-w-md mx-auto"
+          className="space-y-2 font-[sans-serif] max-w-md mx-auto"
           onSubmit={handleSubmit}
         >
+          <h1 className="text-center font-bold ">Create a Wallet</h1> 
           <input
             type="text"
             placeholder="Enter Wallet Name"

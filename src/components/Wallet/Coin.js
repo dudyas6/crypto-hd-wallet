@@ -1,20 +1,19 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import ethIcon from "../../../assets/eth-icon.svg";
-import blastIcon from "../../../assets/blast-icon.svg";
+import lineaIcon from "../../../assets/linea-icon.svg";
 
 export default function Coin({ coinName, balance, onClick }) {
   useEffect(() => {}, [coinName, balance]);
 
-  // Determine which icon to use based on the coinName
   const getIcon = () => {
     switch (coinName) {
-      case "Etherium":
+      case "Ethereum":
         return ethIcon;
-      case "Blast":
-        return blastIcon;
+      case "Linea":
+        return lineaIcon;
       default:
-        return null; // Return a default icon or null if no match
+        return null;
     }
   };
 
