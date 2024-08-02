@@ -26,7 +26,12 @@ export default function Coin({ coinName, balance, usdRate, onClick }) {
         alt={`${coinName} icon`}
       />
       <div className="ml-4 flex-1 flex justify-between items-center">
-        <p className="text-sm text-gray-800 font-semibold">{coinName}</p>
+        <div className="flex flex-col">
+          <p className="text-sm text-gray-800 font-semibold">{coinName}</p>
+          <p className="text-xs font-semibold">
+            ${usdRate[coinName].rateUSD.toFixed(2)}
+          </p>
+        </div>
         <p className="text-sm text-gray-800 font-semibold mr-2">
           {usdRate && usdRate[coinName]?.balanceUSD !== undefined ? (
             <>

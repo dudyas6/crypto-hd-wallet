@@ -42,7 +42,7 @@ const ClickedCoin = ({ selectedCoin, balance, onClick }) => {
       </h3>
 
       <ul className="flex gap-2 bg-gray-100 rounded-2xl p-1 w-max mx-auto flex-col md:flex-row md:gap-4">
-        <div className="flex flex-row">
+        <div className="flex flex-row gap-2">
           <li
             className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
               selectedTab === "receive"
