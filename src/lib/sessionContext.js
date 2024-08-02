@@ -14,6 +14,7 @@ export const useWallet = () => {
 };
 
 const SECRET_KEY = "some-secure-key";
+const ETHERSCAN_API_KEY = "24M91Y238AMH7APN12V3C4PZV4VDNY3HC4";
 
 const encryptText = (text, key) => {
   return CryptoJS.AES.encrypt(text, key).toString();
@@ -26,45 +27,83 @@ const decryptText = (cipherText, key) => {
 
 export const SessionProvider = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [usdRate, setUsdRate] = useState({
+    Arbitrum: { rateUSD: 0, balanceUSD: 0 },
+    Ethereum: { rateUSD: 0, balanceUSD: 0 },
+  });
   const [balances, setBalances] = useState({
-    Linea: "",
+    Arbitrum: "",
     Ethereum: "",
   });
+  const [transactionHistory, setTransactionHistory] = useState({
+    Arbitrum: [],
+    Ethereum: [],
+  });
   const [logged, setLogged] = useState(false);
-  let lineaProvider, ethereumProvider;
 
   useEffect(() => {
-    loadWallet();
-  }, []);
-
-  useEffect(() => {
-    if (currentWallet) {
-      fetchBalances(lineaProvider, ethereumProvider);
-      console.log(currentWallet);
-    }
+    refreshWallet();
   }, [currentWallet]);
 
   useEffect(() => {
     sessionStorage.setItem("logged", logged ? "true" : "false");
   }, [logged]);
 
-  const fetchBalances = async (lineaProvider, ethereumProvider) => {
-    lineaProvider = new ethers.providers.JsonRpcProvider(Coins.Linea.provider);
+  const refreshWallet = () => {
+    if (currentWallet) {
+      fetchBalances();
+      fetchTransactionHistory();
+    }
+  };
+  const getBalanceUSD = async (coinId, balanceEth) => {
+    try {
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      const coinUSD = data[coinId]?.usd || 0;
+      const balanceUsd = parseFloat(balanceEth) * coinUSD;
+      return { coinUSD, balanceUsd };
+    } catch (error) {
+      console.error(`Error fetching balance for ${coinId}:`, error);
+      return { coinUSD: 0, balanceUsd: 0 };
+    }
+  };
+
+  const fetchBalances = async (arbitrumProvider, ethereumProvider) => {
+    arbitrumProvider = new ethers.providers.JsonRpcProvider(
+      Coins.Arbitrum.provider
+    );
     ethereumProvider = new ethers.providers.JsonRpcProvider(
       Coins.Ethereum.provider
     );
-    const lineaBalance = await getBalance(
-      currentWallet.Linea.address,
-      lineaProvider
+    const arbitrumBalance = await getBalance(
+      currentWallet.Arbitrum.address,
+      arbitrumProvider
     );
     const ethereumBalance = await getBalance(
       currentWallet.Ethereum.address,
       ethereumProvider
     );
     setBalances({
-      Linea: lineaBalance,
+      Arbitrum: arbitrumBalance,
       Ethereum: ethereumBalance,
+    });
+    const { coinUSD: ethUSD, balanceUsd: ethUSDBalance } = await getBalanceUSD(
+      "ethereum",
+      ethereumBalance
+    );
+    const { coinUSD: arbitrumUSD, balanceUsd: arbitrumUSDBalance } =
+      await getBalanceUSD("arbitrum", arbitrumBalance);
+    setUsdRate({
+      Arbitrum: {
+        rateUSD: arbitrumUSD,
+        balanceUSD: arbitrumUSDBalance.toFixed(2),
+      },
+      Ethereum: { rateUSD: ethUSD, balanceUSD: ethUSDBalance.toFixed(2) },
     });
   };
 
@@ -96,7 +135,7 @@ export const SessionProvider = ({ children }) => {
 
     const walletData = {
       Name: name,
-      Linea: {
+      Arbitrum: {
         address: ethWallet0.address,
         privateKey: ethWallet0.privateKey,
       },
@@ -112,7 +151,10 @@ export const SessionProvider = ({ children }) => {
       encryptWalletData(
         {
           ...walletData,
-          Linea: { ...walletData.Linea, privateKey: encryptedEth0PrivateKey },
+          Arbitrum: {
+            ...walletData.Arbitrum,
+            privateKey: encryptedEth0PrivateKey,
+          },
           Ethereum: {
             ...walletData.Ethereum,
             privateKey: encryptedEth1PrivateKey,
@@ -131,8 +173,7 @@ export const SessionProvider = ({ children }) => {
     if (name == "" || pass == "") {
       throw new Error("Empty wallet name or password");
     }
-    
-    console.log("restoreWallet called with:", mnemonic);
+
     const cleanedMnemonic = mnemonic.trim().replace(/\u00A0/g, " ");
     if (!ethers.utils.isValidMnemonic(cleanedMnemonic)) {
       throw new Error("Invalid mnemonic");
@@ -152,7 +193,7 @@ export const SessionProvider = ({ children }) => {
 
     const walletData = {
       Name: name,
-      Linea: {
+      Arbitrum: {
         address: ethWallet0.address,
         privateKey: ethWallet0.privateKey,
       },
@@ -168,7 +209,10 @@ export const SessionProvider = ({ children }) => {
       encryptWalletData(
         {
           ...walletData,
-          Linea: { ...walletData.Linea, privateKey: encryptedEth0PrivateKey },
+          Arbitrum: {
+            ...walletData.Arbitrum,
+            privateKey: encryptedEth0PrivateKey,
+          },
           Ethereum: {
             ...walletData.Ethereum,
             privateKey: encryptedEth1PrivateKey,
@@ -193,8 +237,8 @@ export const SessionProvider = ({ children }) => {
           const decryptedWallet = JSON.parse(
             decryptWallet(encryptedWallet, d_pass)
           );
-          decryptedWallet.Linea.privateKey = decryptPrivateKey(
-            decryptedWallet.Linea.privateKey,
+          decryptedWallet.Arbitrum.privateKey = decryptPrivateKey(
+            decryptedWallet.Arbitrum.privateKey,
             d_pass
           );
           decryptedWallet.Ethereum.privateKey = decryptPrivateKey(
@@ -203,7 +247,7 @@ export const SessionProvider = ({ children }) => {
           );
           setCurrentWallet(decryptedWallet);
           setLogged(true);
-          return(`Welcome ${name}`)
+          return `Welcome ${name}`;
         } else {
           return "Password is incorrect for wallet.";
         }
@@ -238,6 +282,17 @@ export const SessionProvider = ({ children }) => {
     return bytes.toString(CryptoJS.enc.Utf8);
   };
 
+  const getGasPriceFee = async (provider, gasLimit) => {
+    try {
+      const gasPrice = await provider.getGasPrice();
+      const gasFee = gasPrice.mul(gasLimit);
+      return { gasPrice, gasFee };
+    } catch (error) {
+      console.error("Error fetching gas price:", error);
+      return null;
+    }
+  };
+
   const submitTransaction = async (coin, toAddress, amount) => {
     try {
       const privateKey = currentWallet[coin].privateKey;
@@ -247,6 +302,14 @@ export const SessionProvider = ({ children }) => {
         Coins[coin].provider
       );
 
+      const gasLimit = 21000;
+
+      const { gasPrice, gasFee } = await getGasPriceFee(provider, gasLimit);
+      if (!gasPrice) {
+        console.error("Failed to retrieve gas price.");
+        return;
+      }
+
       const connectedWallet = wallet.connect(provider);
       let amountWei = ethers.utils.parseEther(amount.toString());
 
@@ -254,47 +317,85 @@ export const SessionProvider = ({ children }) => {
         from: fromAddress,
         to: toAddress,
         value: amountWei,
-        gasLimit: 21000,
+        gasPrice: gasPrice,
+        gasLimit: gasLimit,
       };
 
       const transaction = await connectedWallet.sendTransaction(tx);
 
       const receipt = await transaction.wait();
 
-      console.log(receipt.transactionHash);
-
       fetchBalances();
+      fetchTransactionHistory();
+      return {
+        status: "success",
+        message: receipt.transactionHash,
+      };
     } catch (error) {
-      console.log(error);
+      console.error(error);
+
+      return {
+        status: "failed",
+        message: error,
+      };
     }
   };
 
-  const loadWallet = () => {
-    setLoading(true);
-    const loggedIn = sessionStorage.getItem("logged") === "true";
-    if (loggedIn) {
-      const encryptedWallet = localStorage.getItem("wallet");
-      const encryptedPass = localStorage.getItem("wallet-pass");
-      if (encryptedWallet && encryptedPass) {
-        const pass = decryptText(encryptedPass, SECRET_KEY);
-        const decryptedWallet = JSON.parse(
-          decryptWallet(encryptedWallet, pass)
-        );
-        if (decryptedWallet) {
-          decryptedWallet.Linea.privateKey = decryptPrivateKey(
-            decryptedWallet.Linea.privateKey,
-            pass
-          );
-          decryptedWallet.Ethereum.privateKey = decryptPrivateKey(
-            decryptedWallet.Ethereum.privateKey,
-            pass
-          );
-          setCurrentWallet(decryptedWallet);
-          setLogged(true);
-        }
-      }
+  const fetchTransactionHistory = async () => {
+    if (currentWallet) {
+      const arbitrumTransactions = await getTransactionHistory(
+        "Arbitrum",
+        currentWallet.Arbitrum.address
+      );
+
+      const ethereumTransactions = await getTransactionHistory(
+        "Ethereum",
+        currentWallet.Ethereum.address
+      );
+
+      setTransactionHistory({
+        Arbitrum: arbitrumTransactions,
+        Ethereum: ethereumTransactions,
+      });
     }
-    setLoading(false);
+  };
+
+  const getTransactionHistory = async (
+    coinName,
+    address = "",
+    startBlock = 0,
+    endBlock = 99999999,
+    page = 1,
+    offset = 15,
+    sort = "desc"
+  ) => {
+    try {
+      let apiURL;
+
+      if (coinName === "Ethereum") {
+        apiURL = `https://api-sepolia.etherscan.io/api?module=account&action=txlist&address=${address}&startblock=${startBlock}&endblock=${endBlock}&page=${page}&offset=${offset}&sort=${sort}&apikey=${ETHERSCAN_API_KEY}`;
+      } else if (coinName === "Arbitrum") {
+        apiURL = `https://api-sepolia.arbiscan.io/api?module=account&action=txlist&address=${address}&startblock=${startBlock}&endblock=${endBlock}&page=${page}&offset=${offset}&sort=${sort}&apikey=${ETHERSCAN_API_KEY}`;
+      } else {
+        throw new Error("Unsupported coin name");
+      }
+
+      const response = await fetch(apiURL);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (data.status !== "1") {
+        throw new Error(`Etherscan API error! message: ${data.message}`);
+      }
+
+      return data.result;
+    } catch (error) {
+      return [];
+    }
   };
 
   return (
@@ -302,10 +403,13 @@ export const SessionProvider = ({ children }) => {
       value={{
         currentWallet,
         balances,
+        transactionHistory,
+        usdRate,
         createWallet,
         restoreWallet,
         login,
         logout,
+        refreshWallet,
         submitTransaction,
       }}
     >

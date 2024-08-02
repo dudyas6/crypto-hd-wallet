@@ -4,16 +4,14 @@ export const Coins = {
     name: "Ethereum",
     derivation: "",
     provider: "https://sepolia.infura.io/v3/96ac51a164514e5b8267d1c03fcd65b4",
-    usdValue: "",
     image: "",
   },
-  Linea: {
+  Arbitrum: {
     id: "LIN",
-    name: "Linea",
+    name: "Arbitrum",
     derivation: "",
     provider:
-      "https://linea-sepolia.infura.io/v3/96ac51a164514e5b8267d1c03fcd65b4",
-    usdValue: "",
+      "https://arbitrum-sepolia.infura.io/v3/96ac51a164514e5b8267d1c03fcd65b4",
     image: "",
   },
 };

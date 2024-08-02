@@ -12,6 +12,8 @@ const RestoreWallet = ({ setSelectedComponent }) => {
     e.preventDefault();
     try {
       await restoreWallet(walletName, password, mnemonic);
+      toast.success("Wallet restored succesfuly, returning to menu.")
+      setSelectedComponent("Menu")
     } catch (error) {
       toast.error(`Failed to restore wallet: ${error.message}`);
     }

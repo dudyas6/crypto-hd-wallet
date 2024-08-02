@@ -8,8 +8,9 @@ const Wallet = ({ setSelectedComponent }) => {
   const [selectedCoin, setSelectedCoin] = useState(null);
   const [walletName, setWalletName] = useState("");
   const [password, setPassword] = useState("");
-  const { currentWallet, balances, login, logout } = useWallet();
+  const { currentWallet, balances, login, logout, usdRate } = useWallet();
   const [walletLoaded, setWalletLoaded] = useState(false);
+
 
   useEffect(() => {
     if (currentWallet) {
@@ -21,14 +22,15 @@ const Wallet = ({ setSelectedComponent }) => {
 
   // useEffect(() => {
   //   if (walletLoaded) {
-  //     console.log("Wallet loaded:", currentWallet);
   //   }
   // }, [walletLoaded, currentWallet]);
 
   const coins = {
-    Linea: balances.Linea,
+    Arbitrum: balances.Arbitrum,
     Ethereum: balances.Ethereum,
   };
+
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -59,6 +61,7 @@ const Wallet = ({ setSelectedComponent }) => {
               <ClickedCoin
                 selectedCoin={selectedCoin}
                 balance={balances[selectedCoin]}
+                usdRate={usdRate}
                 onClick={() => {
                   setSelectedCoin(null);
                 }}
@@ -69,6 +72,7 @@ const Wallet = ({ setSelectedComponent }) => {
                   key={coinName}
                   coinName={coinName}
                   balance={balance}
+                  usdRate={usdRate}
                   onClick={() => {
                     setSelectedCoin(coinName);
                   }}

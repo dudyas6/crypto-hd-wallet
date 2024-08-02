@@ -1,20 +1,61 @@
 import React, { useEffect, useState } from "react";
 import { useWallet } from "@/lib/sessionContext";
 const { ethers } = require("ethers");
+import { toast } from "react-toastify";
+
 const SendForm = ({ selectedCoin, balance }) => {
   const [coinAmount, setCoinAmount] = useState("");
   const [usdAmount, setUsdAmount] = useState("");
   const [receiverAddress, setReceiverAddress] = useState("");
   const [loading, setLoading] = useState(false);
-  const { submitTransaction } = useWallet();
+  const { submitTransaction, usdRate } = useWallet();
+
+  useEffect(() => {
+    if (coinAmount && usdRate[selectedCoin]) {
+      const rate = usdRate[selectedCoin].rateUSD;
+      const newUsdAmount = parseFloat(coinAmount) * rate;
+      setUsdAmount(newUsdAmount);
+    } else {
+      setUsdAmount("");
+    }
+  }, [coinAmount, usdRate, selectedCoin]);
+
+  // Update coin amount when USD amount changes
+  useEffect(() => {
+    if (usdAmount && usdRate[selectedCoin]) {
+      const rate = usdRate[selectedCoin].rateUSD;
+      const newCoinAmount = parseFloat(usdAmount) / rate;
+      setCoinAmount(newCoinAmount);
+    } else {
+      setCoinAmount("");
+    }
+  }, [usdAmount, usdRate, selectedCoin]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await submitTransaction(selectedCoin, receiverAddress, coinAmount);
+      const result = await submitTransaction(
+        selectedCoin,
+        receiverAddress,
+        coinAmount
+      );
+      if (result.status === "success") {
+        toast.success(
+          "Transaction successful!\n" + "Transaction hash:" + result.message,
+          {
+            autoClose: false,
+            closeOnClick: false,
+          }
+        );
+      } else {
+        toast.error("Error: " + result.message.reason, {
+          autoClose: false,
+          closeOnClick: false,
+        });
+      }
     } catch (error) {
-      console.error("Error processing transaction:", error);
+      console.error("Unexpected error:", error);
     } finally {
       setLoading(false);
     }
@@ -44,11 +85,10 @@ const SendForm = ({ selectedCoin, balance }) => {
             Coin Amount
           </label>
           <input
-            type="number"
+            type="text"
             value={coinAmount}
             onChange={(e) => setCoinAmount(e.target.value)}
             placeholder="Enter amount"
-            step={0.000000000000001}
             min="0"
             className="px-4 py-3.5 bg-gray-100 text-black w-full text-sm border-2 border-gray-100 focus:border-blue-500 rounded outline-none"
           />
@@ -59,7 +99,7 @@ const SendForm = ({ selectedCoin, balance }) => {
             USD Amount
           </label>
           <input
-            type="number"
+            type="text"
             value={usdAmount}
             onChange={(e) => setUsdAmount(e.target.value)}
             placeholder="Enter amount"

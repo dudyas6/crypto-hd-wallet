@@ -1,20 +1,17 @@
 import React, { useState } from "react";
-import { useWallet } from "@/lib/sessionContext";
-import QRCode from "qrcode.react";
 import SendForm from "./SendForm";
+import ReceiveForm from "./ReceiveForm";
+import TransactionsTable from "./TransactionsTable";
 
 const ClickedCoin = ({ selectedCoin, balance, onClick }) => {
   const [selectedTab, setSelectedTab] = useState("receive");
-  const { currentWallet } = useWallet();
 
   const handleTabClick = (tab) => {
     setSelectedTab(tab);
   };
 
-  const address = currentWallet[selectedCoin]?.address || "";
-
   return (
-    <div className="relative p-4 border rounded-lg bg-white">
+    <div className="relative p-4 border rounded-lg bg-white overflow-auto">
       <button
         onClick={onClick}
         className="absolute top-4 left-4 px-2 py-2 rounded-3xl bg-blue-500 text-white  flex justify-center"
@@ -40,41 +37,56 @@ const ClickedCoin = ({ selectedCoin, balance, onClick }) => {
 
       <h4 className="text-lg text-center font-bold ">{selectedCoin}</h4>
       <h3 className="font-semibold text-center dark:text-black mb-4">
-        {selectedCoin} balance is : {balance}
+        <span style={{ color: "gray" }}>Balance: </span>
+        {balance} ETH
       </h3>
-      <ul className="flex gap-4 bg-gray-100 rounded-2xl p-1 w-max mx-auto">
+
+      <ul className="flex gap-2 bg-gray-100 rounded-2xl p-1 w-max mx-auto flex-col md:flex-row md:gap-4">
+        <div className="flex flex-row">
+          <li
+            className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
+              selectedTab === "receive"
+                ? "bg-blue-600 text-white"
+                : "bg-gray-200"
+            }`}
+            onClick={() => handleTabClick("receive")}
+          >
+            Receive
+          </li>
+          <li
+            className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
+              selectedTab === "send" ? "bg-blue-600 text-white" : "bg-gray-200"
+            }`}
+            onClick={() => handleTabClick("send")}
+          >
+            Send
+          </li>
+        </div>
         <li
           className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
-            selectedTab === "receive" ? "bg-blue-600 text-white" : "bg-gray-200"
+            selectedTab === "transactions"
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200"
           }`}
-          onClick={() => handleTabClick("receive")}
+          onClick={() => handleTabClick("transactions")}
         >
-          Receive
-        </li>
-        <li
-          className={`text-white-600 rounded-2xl font-semibold text-center text-sm py-3 px-6 tracking-wide cursor-pointer ${
-            selectedTab === "send" ? "bg-blue-600 text-white" : "bg-gray-200"
-          }`}
-          onClick={() => handleTabClick("send")}
-        >
-          Send
+          Transactions
         </li>
       </ul>
 
-      <div className="mt-4 text-center text-gray-700">
+      <div
+        style={{ height: "250px" }}
+        className="mt-4 text-center text-gray-700"
+      >
         {selectedTab === "receive" && (
-          <div className="mt-4">
-            <div className="text-center font-semibold mb-2">
-              Your {selectedCoin} receiving address:
-            </div>
-            <p className="text-center">{address}</p>
-            <div className="mt-4 flex justify-center">
-              {address && <QRCode value={address} size={128} level="H" />}
-            </div>
-          </div>
+          <ReceiveForm selectedCoin={selectedCoin} />
         )}
         {selectedTab === "send" && (
           <SendForm selectedCoin={selectedCoin} balance={balance} />
+        )}
+
+        {selectedTab === "transactions" && (
+          <TransactionsTable selectedCoin={selectedCoin} balance={balance} />
         )}
       </div>
     </div>

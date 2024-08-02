@@ -1,17 +1,15 @@
 import { useEffect } from "react";
 import Image from "next/image";
 import ethIcon from "../../../assets/eth-icon.svg";
-import lineaIcon from "../../../assets/linea-icon.svg";
+import arbitrumIcon from "../../../assets/arbitrum-icon.svg";
 
-export default function Coin({ coinName, balance, onClick }) {
-  useEffect(() => {}, [coinName, balance]);
-
+export default function Coin({ coinName, balance, usdRate, onClick }) {
   const getIcon = () => {
     switch (coinName) {
       case "Ethereum":
         return ethIcon;
-      case "Linea":
-        return lineaIcon;
+      case "Arbitrum":
+        return arbitrumIcon;
       default:
         return null;
     }
@@ -29,7 +27,18 @@ export default function Coin({ coinName, balance, onClick }) {
       />
       <div className="ml-4 flex-1 flex justify-between items-center">
         <p className="text-sm text-gray-800 font-semibold">{coinName}</p>
-        <p className="text-sm text-gray-800 font-semibold mr-2">{balance}</p>
+        <p className="text-sm text-gray-800 font-semibold mr-2">
+          {usdRate && usdRate[coinName]?.balanceUSD !== undefined ? (
+            <>
+              {balance} <span className="text-gray-500">ETH</span> ($
+              {usdRate[coinName].balanceUSD})
+            </>
+          ) : (
+            <>
+              {balance} <span className="text-gray-500">ETH</span>
+            </>
+          )}
+        </p>
       </div>
     </div>
   );
