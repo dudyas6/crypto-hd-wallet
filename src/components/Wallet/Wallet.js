@@ -53,7 +53,7 @@ const Wallet = ({ setSelectedComponent }) => {
         <div className="bg-white shadow-[0_4px_12px_-5px_rgba(0,0,0,0.4)] px-6 py-8 w-full rounded-lg font-[sans-serif] overflow-hidden mx-auto mt-4">
           <div className="flex flex-wrap items-center gap-4">
             <h3 className="text-xl text-center font-bold flex-1 text-gray-800">
-              {currentWallet.Name}'s Wallet
+              {currentWallet.Name}&rsquo;s Wallet
             </h3>
           </div>
           <div className="mt-8 space-y-4">
