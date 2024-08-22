@@ -49,7 +49,7 @@ const RestoreWallet = ({ setSelectedComponent }) => {
         <textarea
           placeholder="Enter Mnemonic Phrase"
           className="px-4 py-3 bg-gray-100 w-full text-sm outline-none border-b-2 border-blue-500 rounded"
-          onChange={(e) => setMnemonic(e.target.value)} // Set mnemonic
+          onChange={(e) => setMnemonic(e.target.value.trim())} // Set mnemonic
           value={mnemonic}
           rows={4}
         />

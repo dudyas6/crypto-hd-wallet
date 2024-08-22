@@ -28,8 +28,8 @@ const decryptText = (cipherText, key) => {
 export const SessionProvider = ({ children }) => {
   const [currentWallet, setCurrentWallet] = useState(null);
   const [usdRate, setUsdRate] = useState({
-    Arbitrum: { rateUSD: 0, balanceUSD: 0 },
-    Ethereum: { rateUSD: 0, balanceUSD: 0 },
+    Arbitrum: { coinValueUSD: 0, rateUSD: 0, balanceUSD: 0 },
+    Ethereum: { coinValueUSD:0, rateUSD: 0, balanceUSD: 0 },
   });
   const [balances, setBalances] = useState({
     Arbitrum: "",
@@ -96,14 +96,20 @@ export const SessionProvider = ({ children }) => {
       "ethereum",
       ethereumBalance
     );
-    const { coinUSD: arbitrumUSD, balanceUsd: arbitrumUSDBalance } =
-      await getBalanceUSD("arbitrum", arbitrumBalance);
+
+    const { coinUSD: arbitrumUSD, balanceUsd: arbitrumUSDBalance } = await getBalanceUSD("arbitrum", arbitrumBalance);
+    const arbitrumUSDBalanceEth = parseFloat(arbitrumBalance) * ethUSD;
     setUsdRate({
       Arbitrum: {
-        rateUSD: arbitrumUSD,
-        balanceUSD: arbitrumUSDBalance.toFixed(2),
+        coinValueUSD: arbitrumUSD,
+        rateUSD: ethUSD,
+        balanceUSD: arbitrumUSDBalanceEth.toFixed(2),
       },
-      Ethereum: { rateUSD: ethUSD, balanceUSD: ethUSDBalance.toFixed(2) },
+      Ethereum: {
+        coinValueUSD: ethUSD,
+        rateUSD: ethUSD,
+        balanceUSD: ethUSDBalance.toFixed(2),
+      },
     });
   };
 

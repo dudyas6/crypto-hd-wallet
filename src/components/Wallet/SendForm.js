@@ -10,11 +10,28 @@ const SendForm = ({ selectedCoin, balance }) => {
   const [loading, setLoading] = useState(false);
   const { submitTransaction, usdRate } = useWallet();
 
+
+    const handleUsdChange = (e) => {
+      const usdValue = e.target.value;
+      setUsdAmount(usdValue);
+      setCoinAmount(
+        usdValue ? (usdValue / usdRate[selectedCoin].rateUSD).toFixed(10) : ""
+      );
+    };
+
+    const handleCoinChange = (e) => {
+      const ethValue = e.target.value;
+      setCoinAmount(ethValue);
+      setUsdAmount(
+        ethValue ? (ethValue * usdRate[selectedCoin].rateUSD).toFixed(5) : ""
+      );
+    };
+/*
   useEffect(() => {
     if (coinAmount && usdRate[selectedCoin]) {
       const rate = usdRate[selectedCoin].rateUSD;
       const newUsdAmount = parseFloat(coinAmount) * rate;
-      setUsdAmount(newUsdAmount);
+      setUsdAmount(newUsdAmount.toFixed(4));
     } else {
       setUsdAmount("");
     }
@@ -30,7 +47,7 @@ const SendForm = ({ selectedCoin, balance }) => {
       setCoinAmount("");
     }
   }, [usdAmount, usdRate, selectedCoin]);
-
+*/
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -62,10 +79,7 @@ const SendForm = ({ selectedCoin, balance }) => {
   };
 
   return (
-    <form
-      className="font-[sans-serif] m-6 max-w-4xl mx-auto"
-      onSubmit={handleSubmit}
-    >
+    <form className="font-[sans-serif] m-6 max-w-4xl mx-auto">
       <div className="grid sm:grid-cols-2 gap-10">
         <div className="relative flex items-center sm:col-span-2">
           <label className="text-[13px] bg-white border text-black absolute px-2 top-[-10px] left-[18px]">
@@ -85,9 +99,9 @@ const SendForm = ({ selectedCoin, balance }) => {
             Coin Amount
           </label>
           <input
-            type="text"
+            type="number"
             value={coinAmount}
-            onChange={(e) => setCoinAmount(e.target.value)}
+            onChange={handleCoinChange}
             placeholder="Enter amount"
             min="0"
             className="px-4 py-3.5 bg-gray-100 text-black w-full text-sm border-2 border-gray-100 focus:border-blue-500 rounded outline-none"
@@ -99,9 +113,9 @@ const SendForm = ({ selectedCoin, balance }) => {
             USD Amount
           </label>
           <input
-            type="text"
+            type="number"
             value={usdAmount}
-            onChange={(e) => setUsdAmount(e.target.value)}
+            onChange={handleUsdChange}
             placeholder="Enter amount"
             min="0"
             className="px-4 py-3.5 bg-gray-100 text-black w-full text-sm border-2 border-gray-100 focus:border-blue-500 rounded outline-none"
@@ -111,6 +125,7 @@ const SendForm = ({ selectedCoin, balance }) => {
 
       <button
         type="submit"
+        onClick={handleSubmit}
         className={`mt-8 px-6 py-2.5 text-sm rounded transition-all ${
           loading
             ? "bg-blue-500 text-white opacity-70 cursor-not-allowed"

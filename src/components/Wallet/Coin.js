@@ -15,6 +15,8 @@ export default function Coin({ coinName, balance, usdRate, onClick }) {
     }
   };
 
+
+
   return (
     <div
       className="flex items-center cursor-pointer shadow-[0_2px_6px_-1px_rgba(0,0,0,0.3)] rounded-lg w-full p-4"
@@ -29,7 +31,7 @@ export default function Coin({ coinName, balance, usdRate, onClick }) {
         <div className="flex flex-col">
           <p className="text-sm text-gray-800 font-semibold">{coinName}</p>
           <p className="text-xs font-semibold">
-            ${usdRate[coinName].rateUSD.toFixed(2)}
+            ${usdRate[coinName].coinValueUSD.toFixed(2)}
           </p>
         </div>
         <p className="text-sm text-gray-800 font-semibold mr-2">
